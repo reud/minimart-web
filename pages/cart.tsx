@@ -13,25 +13,25 @@ interface cartInfo {
 const CartPage: FC = () => {
   const [cart, setCart] = useState<cartInfo[]>([]);
   const [sum,setSum] = useState<number>(0);
-  const [cartRaw, setCartRaw] = useState<Cart | null>(null);
+
+  const [cartRaw, setCartRaw] = useState<Cart | null>(null); // Layoutに渡す様
 
 
   const router = useRouter();
 
   useEffect(() => {
-    const c = fetchCart();
-    setCartRaw(c);
-  },[])
-
-
-  useEffect(() => {
     const cart = fetchCart();
+    setCartRaw(cart);
+
     if (!cart) {
       return;
     }
 
     const counter: {[name: string]: number} = {};
     const info: {[name: string]: Product} = {};
+
+    // ローカルストレージは商品を重複して持つのでカートページでカウンティング
+    // fixme: ローカルストレージの持ち方を変えたい
     cart.products.forEach((p) => {
       // キーが存在するならカウントを増やして次へ
       if(info[p.name]) {
@@ -41,8 +41,13 @@ const CartPage: FC = () => {
         info[p.name] = p;
       }
     })
+
     let calculatedCart: cartInfo[] = [];
+
+    // 合計金額
     let tmpSum = 0;
+
+    // 合計金額を生成しつつ欲しいデータにまとめる
     for (let [key,value] of Object.entries(info)) {
       const count = counter[key];
       calculatedCart.push({
@@ -51,6 +56,8 @@ const CartPage: FC = () => {
       })
       tmpSum += count * value.price;
     }
+
+    // 合計金額とカートの更新
     setSum(tmpSum);
     setCart(calculatedCart);
   }, []);
