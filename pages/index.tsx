@@ -7,6 +7,7 @@ import { Layout } from "../components/Layout";
 const TopPage: FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
 
+
   useEffect(() => {
     listProducts().then((products) => setProducts(products));
   }, []);

@@ -1,11 +1,16 @@
-import { FC } from "react";
+import { FC, useEffect, useState } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import styles from "./Layout.module.css";
+import { Cart, fetchCart } from "../lib/localstorage";
 
 type Props = {};
 
 export const Layout: FC<Props> = ({ children }) => {
+  const [cart,setCart] = useState<Cart | null>(null);
+  useEffect(() => {
+    setCart(fetchCart());
+  },[])
   return (
     <div>
       <Head>
@@ -20,7 +25,7 @@ export const Layout: FC<Props> = ({ children }) => {
           <Link href="/cart">
             <a>
               <span>🛒</span>
-              <span className={styles.cartCount}>({/* ここにカートに入っているアイテム数を入れる */})</span>
+              <span className={styles.cartCount}>({cart ? cart.products.length : 0})</span>
             </a>
           </Link>
         </div>

@@ -28,7 +28,7 @@ export async function graphqlRequest({
   variables?: Record<string, any>;
 }): Promise<any> {
   const { endpoint, apiKey, userName } = getConfig();
-
+  console.log(variables);
   const response = await fetch(endpoint, {
     method: "POST",
     headers: {
