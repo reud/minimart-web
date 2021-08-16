@@ -1,16 +1,16 @@
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import styles from "./Layout.module.css";
-import { Cart, fetchCart } from "../lib/localstorage";
+import { Cart } from "../lib/localstorage";
 
-type Props = {};
+type Props = {
+  cart: Cart,
+};
 
-export const Layout: FC<Props> = ({ children }) => {
-  const [cart,setCart] = useState<Cart | null>(null);
-  useEffect(() => {
-    setCart(fetchCart());
-  },[])
+export const Layout: FC<Props> = ( props ) => {
+  const cartInfo = props.cart || {products: []};
+
   return (
     <div>
       <Head>
@@ -25,12 +25,12 @@ export const Layout: FC<Props> = ({ children }) => {
           <Link href="/cart">
             <a>
               <span>🛒</span>
-              <span className={styles.cartCount}>({cart ? cart.products.length : 0})</span>
+              <span className={styles.cartCount}>( { cartInfo.products.length } )</span>
             </a>
           </Link>
         </div>
       </header>
-      <main>{children}</main>
+      <main>{props.children}</main>
     </div>
   );
 };

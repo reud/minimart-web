@@ -3,21 +3,27 @@ import Link from "next/link";
 import styles from "./index.module.css";
 import { listProducts, Product } from "../lib/product";
 import { Layout } from "../components/Layout";
+import { Cart, fetchCart } from "../lib/localstorage";
 
 const TopPage: FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [cart, setCart] = useState<Cart | null>(null);
 
 
   useEffect(() => {
     listProducts().then((products) => setProducts(products));
   }, []);
 
+  useEffect(() => {
+    const c = fetchCart();
+    setCart(c);
+  },[])
+
   return (
-    <Layout>
+    <Layout cart={ cart || {products: []} }>
       <ul className={styles.list}>
         {products.map((product) => (
           <li key={product.id} className={styles.listItem}>
-            {/* このリンク先はないので新規ページを作る */}
             <Link href={`/products/${product.id}`}>
               <a className={styles.link}>
                 <div className={styles.imageWrapper}>

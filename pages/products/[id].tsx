@@ -2,7 +2,7 @@ import { FC, useEffect, useState } from "react";
 import { fetchProduct, Product } from "../../lib/product";
 import { Layout } from "../../components/Layout";
 import { useRouter } from "next/router";
-import { fetchCart, pushProduct } from "../../lib/localstorage";
+import { Cart, fetchCart, pushProduct } from "../../lib/localstorage";
 
 const ProductPage: FC = () => {
   const router = useRouter();
@@ -10,17 +10,30 @@ const ProductPage: FC = () => {
 
 
   const [product, setProduct] = useState<Product | null>(null);
+  const [cartRaw, setCartRaw] = useState<Cart | null>(null);
 
   const addCart = () => {
     if (!product) {
       return;
     }
     pushProduct(product)
-    // for debug
-    console.log(fetchCart());
-    // todo: fook to header
-    window.location.reload();
+    // 画面を更新するための処理
+    if (!cartRaw) {
+      setCartRaw({
+        products: [product]
+      });
+      return;
+    } 
+    setCartRaw({
+      products: [...(cartRaw.products),product]
+    })
   }
+
+  useEffect(() => {
+    const c = fetchCart();
+    setCartRaw(c);
+  },[])
+
 
   useEffect(() => {
     if (!id) {
@@ -34,7 +47,7 @@ const ProductPage: FC = () => {
   },[id])
 
   return (
-    <Layout>
+    <Layout cart={cartRaw || {products: []}}>
       <div>
         {
           product ? (
@@ -43,7 +56,7 @@ const ProductPage: FC = () => {
               <h1> { product.name }</h1>
               <p> { product.price } 円</p>
               <p> { product.description }</p>
-              <button onClick={addCart} > ここをクリック</button>
+              <button onClick={addCart} > カートに追加 </button>
             </div>
           ) : (
            <p> Loading</p>

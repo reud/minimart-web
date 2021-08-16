@@ -9,7 +9,11 @@ export const fetchCart = (): Cart | null => {
   if (!cartText) {
     return null;
   }
-  return JSON.parse(cartText) as Cart;
+  const c = JSON.parse(cartText) as Cart;
+  if (!c.products) {
+    c.products = [];
+  }
+  return c;
 }
 
 export const deleteCart = () => {

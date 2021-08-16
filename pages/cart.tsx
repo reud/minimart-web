@@ -2,7 +2,7 @@ import { FC, useEffect, useState } from "react";
 import styles from "./index.module.css";
 import { Product } from "../lib/product";
 import { Layout } from "../components/Layout";
-import { deleteCart, fetchCart } from "../lib/localstorage";
+import { Cart, deleteCart, fetchCart } from "../lib/localstorage";
 import { useRouter } from "next/router";
 
 interface cartInfo {
@@ -11,9 +11,18 @@ interface cartInfo {
 }
 
 const CartPage: FC = () => {
-  const [cart, setCart] = useState<cartInfo[] | null>(null);
+  const [cart, setCart] = useState<cartInfo[]>([]);
   const [sum,setSum] = useState<number>(0);
+  const [cartRaw, setCartRaw] = useState<Cart | null>(null);
+
+
   const router = useRouter();
+
+  useEffect(() => {
+    const c = fetchCart();
+    setCartRaw(c);
+  },[])
+
 
   useEffect(() => {
     const cart = fetchCart();
@@ -47,8 +56,7 @@ const CartPage: FC = () => {
   }, []);
 
   return (
-    <Layout>
-      <p>合計金額は {sum}円</p>
+    <Layout cart={cartRaw || {products: []} }>
       <ul className={styles.list}>
         {cart && cart.map((ci) => (
           <li key={ci.product.id} >
@@ -59,8 +67,10 @@ const CartPage: FC = () => {
           </li>
         ))}
       </ul>
+      <p>合計金額は {sum}円</p>
       <button onClick={() => {
         deleteCart();
+        window.alert("注文しました")
         router.push("/");
       }} > 注文を決定する。 </button>
     </Layout>
