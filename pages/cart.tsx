@@ -2,7 +2,7 @@ import { FC, useEffect, useState } from "react";
 import styles from "./index.module.css";
 import { Product } from "../lib/product";
 import { Layout } from "../components/Layout";
-import { Cart, deleteCart, fetchCart } from "../lib/localstorage";
+import { deleteCart, fetchCart, useCartItemCount } from "../lib/localstorage";
 import { useRouter } from "next/router";
 
 interface cartInfo {
@@ -13,15 +13,13 @@ interface cartInfo {
 const CartPage: FC = () => {
   const [cart, setCart] = useState<cartInfo[]>([]);
   const [sum,setSum] = useState<number>(0);
-
-  const [cartRaw, setCartRaw] = useState<Cart | null>(null); // Layoutに渡す様
+  const { cartItemCount } = useCartItemCount();
 
 
   const router = useRouter();
 
   useEffect(() => {
     const cart = fetchCart();
-    setCartRaw(cart);
 
     if (!cart) {
       return;
@@ -63,7 +61,7 @@ const CartPage: FC = () => {
   }, []);
 
   return (
-    <Layout cart={cartRaw || {products: []} }>
+    <Layout cartItemCount={ cartItemCount }>
       <ul className={styles.list}>
         {cart && cart.map((ci) => (
           <li key={ci.product.id} >

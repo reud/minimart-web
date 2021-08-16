@@ -2,15 +2,14 @@ import { FC, useEffect, useState } from "react";
 import { fetchProduct, Product } from "../../lib/product";
 import { Layout } from "../../components/Layout";
 import { useRouter } from "next/router";
-import { Cart, fetchCart, pushProduct } from "../../lib/localstorage";
+import { pushProduct, useCartItemCount } from "../../lib/localstorage";
 
 const ProductPage: FC = () => {
   const router = useRouter();
   const id= router.query.id as string;
-
+  const { cartItemCount, updateCartItemCount } = useCartItemCount();
 
   const [product, setProduct] = useState<Product | null>(null);
-  const [cartRaw, setCartRaw] = useState<Cart | null>(null);
 
   const addCart = () => {
     if (!product) {
@@ -18,21 +17,8 @@ const ProductPage: FC = () => {
     }
     pushProduct(product)
     // 画面を更新するための処理
-    if (!cartRaw) {
-      setCartRaw({
-        products: [product]
-      });
-      return;
-    } 
-    setCartRaw({
-      products: [...(cartRaw.products),product]
-    })
+    updateCartItemCount();
   }
-
-  useEffect(() => {
-    const c = fetchCart();
-    setCartRaw(c);
-  },[])
 
 
   useEffect(() => {
@@ -47,7 +33,7 @@ const ProductPage: FC = () => {
   },[id])
 
   return (
-    <Layout cart={cartRaw || {products: []}}>
+    <Layout cartItemCount={cartItemCount}>
       <div>
         {
           product ? (

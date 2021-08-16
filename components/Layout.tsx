@@ -2,14 +2,13 @@ import { FC } from "react";
 import Head from "next/head";
 import Link from "next/link";
 import styles from "./Layout.module.css";
-import { Cart } from "../lib/localstorage";
 
 type Props = {
-  cart: Cart,
+  cartItemCount: number,
 };
 
 export const Layout: FC<Props> = ( props ) => {
-  const cartInfo = props.cart || {products: []};
+  const cartItemCount = props.cartItemCount;
 
   return (
     <div>
@@ -25,7 +24,7 @@ export const Layout: FC<Props> = ( props ) => {
           <Link href="/cart">
             <a>
               <span>🛒</span>
-              <span className={styles.cartCount}>( { cartInfo.products.length } )</span>
+              <span className={styles.cartCount}>( { cartItemCount } )</span>
             </a>
           </Link>
         </div>

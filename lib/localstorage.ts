@@ -1,3 +1,4 @@
+import { useCallback, useEffect, useState } from "react";
 import { Product } from "./product";
 
 export interface Cart {
@@ -35,4 +36,20 @@ export const pushProduct = (product: Product) => {
   cart.products.push(product);
   const cartText = JSON.stringify(cart);
   localStorage.setItem('cart',cartText);
+}
+
+export const useCartItemCount = (): { cartItemCount: number; updateCartItemCount: () => void } => {
+  const [cartItemCount, setCartItemCount] = useState(0);
+
+  useEffect(() => {
+    const cart = fetchCart();
+    setCartItemCount(cart ? cart.products.length : 0);
+  }, []);
+
+  const updateCartItemCount = useCallback(() => {
+    const cart = fetchCart();
+    setCartItemCount(cart ? cart.products.length : 0);
+  }, []);
+
+  return { cartItemCount, updateCartItemCount };
 }
