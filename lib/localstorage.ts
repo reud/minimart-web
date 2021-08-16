@@ -21,6 +21,12 @@ export const deleteCart = () => {
   localStorage.removeItem("cart");
 }
 
+export const updateProduct = (products: Product[]) => {
+  const cartText = JSON.stringify({products});
+  localStorage.setItem('cart',cartText);
+}
+
+
 export const pushProduct = (product: Product) => {
   let cart = fetchCart();
 

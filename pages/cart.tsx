@@ -2,21 +2,53 @@ import { FC, useEffect, useState } from "react";
 import styles from "./index.module.css";
 import { Product } from "../lib/product";
 import { Layout } from "../components/Layout";
-import { deleteCart, fetchCart, useCartItemCount } from "../lib/localstorage";
+import { deleteCart, fetchCart, updateProduct, useCartItemCount } from "../lib/localstorage";
 import { useRouter } from "next/router";
 
-interface cartInfo {
-  product: Product;
-  count: number;
+interface productInCartInfoInterface {
+  productTypes: Product;
+  amount: number;
 }
 
+
 const CartPage: FC = () => {
-  const [cart, setCart] = useState<cartInfo[]>([]);
-  const [sum,setSum] = useState<number>(0);
-  const { cartItemCount } = useCartItemCount();
+  const [products,setProducts] = useState<{[name: string]: productInCartInfoInterface}>({});
+  const [totalSpend,setTotalSpend] = useState<number>(0);
 
+  const addAmount = (name: string):boolean => {
+    console.log(products[name].amount);
+    if(!products[name]) {
+      return false;
+    }
+    const prod = {...products};
+    prod[name].amount++;
+    setTotalSpend(totalSpend + prod[name].productTypes.price)
+    setProducts(prod);
+    return true;
+  }
 
-  const router = useRouter();
+  const saveToLocalStorage = () => {
+    deleteCart();
+    const productArray = [];
+    for (let [_,value] of Object.entries(products)) {
+      for (let i = 0; i < value.amount; i++) {
+        productArray.push(value.productTypes);
+      }
+    }
+    updateProduct(productArray);
+    updateCartItemCount();
+  }
+
+  const delAmount = (name: string): boolean => {
+    if(!products[name] || products[name].amount == 0) {
+      return false;
+    }
+    const prod = {...products};
+    prod[name].amount--;
+    setTotalSpend(totalSpend - prod[name].productTypes.price)
+    setProducts(prod);
+    return true;
+  }
 
   useEffect(() => {
     const cart = fetchCart();
@@ -40,7 +72,7 @@ const CartPage: FC = () => {
       }
     })
 
-    let calculatedCart: cartInfo[] = [];
+    let calculatedCart: productInCartInfoInterface[] = [];
 
     // 合計金額
     let tmpSum = 0;
@@ -49,30 +81,44 @@ const CartPage: FC = () => {
     for (let [key,value] of Object.entries(info)) {
       const count = counter[key];
       calculatedCart.push({
-        count,
-        product: value,
+        amount: count,
+        productTypes: value,
       })
       tmpSum += count * value.price;
     }
 
-    // 合計金額とカートの更新
-    setSum(tmpSum);
-    setCart(calculatedCart);
-  }, []);
+    const pdts:{[name: string]: productInCartInfoInterface} = {};
+    calculatedCart.map((product) => {
+      pdts[product.productTypes.name] = product;
+    })
+    setProducts(pdts);
+    setTotalSpend(tmpSum);
+  },[])
+
+  const { cartItemCount, updateCartItemCount } = useCartItemCount();
+  const router = useRouter();
 
   return (
     <Layout cartItemCount={ cartItemCount }>
       <ul className={styles.list}>
-        {cart && cart.map((ci) => (
-          <li key={ci.product.id} >
-              <img  src={ci.product.imageUrl} alt={`${ci.product.imageUrl}の写真`} />
-              <div>{ci.product.price}円</div>
-              <div>{ci.product.name}</div>
-              <div> {ci.count} 個</div>
+        {products && Object.keys(products).map((key) => (
+          <li key={products[key].productTypes.id} >
+              <img  src={products[key].productTypes.imageUrl} alt={`${products[key].productTypes.imageUrl}の写真`} />
+              <div>{products[key].productTypes.price}円</div>
+              <div>{products[key].productTypes.name}</div>
+              <div> {products[key].amount} 個</div>
+              <button onClick={() => {
+                delAmount(products[key].productTypes.name);
+                saveToLocalStorage();
+              }}> - </button>
+            <button onClick={() => {
+              addAmount(products[key].productTypes.name);
+              saveToLocalStorage();
+            }}> + </button>
           </li>
         ))}
       </ul>
-      <p>合計金額は {sum}円</p>
+      <p>合計金額は {totalSpend}円</p>
       <button onClick={() => {
         deleteCart();
         window.alert("注文しました")
